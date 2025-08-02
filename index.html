@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>在线 m3u8 视频播放器</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <style>
         * {
             margin: 0;
@@ -231,11 +232,17 @@
                 <li>点击"加载视频"按钮开始播放</li>
                 <li>支持大多数现代浏览器（Chrome、Firefox、Safari、Edge）</li>
                 <li>如果视频无法播放，请检查链接是否有效且可公开访问</li>
+                <li>也可以通过URL参数直接播放视频: <code>?url=视频地址</code></li>
             </ul>
 
             <h3>示例 m3u8 链接：</h3>
             <div class="example-url">
                 https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8
+            </div>
+
+            <h3>URL参数使用示例：</h3>
+            <div class="example-url">
+                https://online-player.github.io/?url=https%3A%2F%2Ftest-streams.mux.dev%2Fx36xhzz%2Fx36xhzz.m3u8
             </div>
         </div>
 
@@ -250,9 +257,6 @@
             const video = document.getElementById('videoPlayer');
             const videoUrlInput = document.getElementById('videoUrl');
             const loadVideoButton = document.getElementById('loadVideo');
-
-            // 设置示例 URL
-            videoUrlInput.value = 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8';
 
             let hls = null;
 
@@ -283,8 +287,24 @@
                 }
             }
 
-            // 页面加载时自动加载示例视频
-            loadVideo(videoUrlInput.value);
+            // 获取URL参数
+            function getParameterByName(name) {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get(name);
+            }
+
+            // 检查是否有url参数
+            const urlParam = getParameterByName('url');
+            if (urlParam) {
+                // 如果有url参数，使用参数中的URL
+                const decodedUrl = decodeURIComponent(urlParam);
+                videoUrlInput.value = decodedUrl;
+                loadVideo(decodedUrl);
+            } else {
+                // 如果没有url参数，使用默认示例URL
+                videoUrlInput.value = 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8';
+                loadVideo(videoUrlInput.value);
+            }
 
             // 点击按钮加载视频
             loadVideoButton.addEventListener('click', function() {
