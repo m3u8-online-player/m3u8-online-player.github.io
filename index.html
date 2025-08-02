@@ -3,35 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>在线 m3u8 视频播放器</title>
+    <title>M3U8在线播放器</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
             color: #fff;
+            min-height: 100vh;
             padding: 20px;
-            position: relative;
-            overflow-x: hidden;
-        }
-
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 10% 20%, rgba(41, 128, 185, 0.1) 0%, transparent 20%),
-                        radial-gradient(circle at 90% 80%, rgba(231, 76, 60, 0.1) 0%, transparent 20%);
-            z-index: -1;
         }
 
         .container {
@@ -42,170 +30,251 @@
         header {
             text-align: center;
             padding: 30px 0;
-            position: relative;
+            margin-bottom: 20px;
         }
 
         h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(90deg, #00dbde, #fc00ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 2.8rem;
             margin-bottom: 10px;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
 
         .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.8;
+            font-size: 1.2rem;
+            opacity: 0.9;
             max-width: 600px;
             margin: 0 auto;
         }
 
         .player-container {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 25px;
-            margin-bottom: 30px;
-            transition: all 0.3s ease;
-        }
-
-        .player-container:hover {
-            background: rgba(255, 255, 255, 0.12);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-        }
-
-        .url-input-container {
             display: flex;
-            margin-bottom: 25px;
-            gap: 10px;
-        }
-
-        #videoUrl {
-            flex: 1;
-            padding: 15px 20px;
-            border: none;
+            flex-direction: column;
+            gap: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
             border-radius: 15px;
-            font-size: 16px;
-            background: rgba(255, 255, 255, 0.12);
-            color: white;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            transition: all 0.3s ease;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            padding: 20px;
         }
 
-        #videoUrl:focus {
-            outline: none;
-            background: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.5);
-        }
-
-        #videoUrl::placeholder {
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        #loadVideo {
-            padding: 15px 30px;
-            background: linear-gradient(90deg, #00dbde, #fc00ff);
-            color: white;
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(128, 0, 128, 0.3);
-        }
-
-        #loadVideo:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(128, 0, 128, 0.5);
-        }
-
-        #loadVideo:active {
-            transform: translateY(0);
+        .video-section {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #000;
+            aspect-ratio: 16/9;
         }
 
         #videoPlayer {
             width: 100%;
-            height: 500px;
-            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            height: 100%;
+            display: block;
+            background: #000;
         }
 
-        .instructions {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 25px;
+        .controls {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(30, 30, 50, 0.8);
+            border-radius: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            background: #4a69bd;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
             transition: all 0.3s ease;
         }
 
-        .instructions:hover {
-            background: rgba(255, 255, 255, 0.12);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        .btn:hover {
+            background: #1e3799;
+            transform: translateY(-2px);
         }
 
-        .instructions h2 {
-            font-size: 1.8rem;
-            margin-bottom: 20px;
-            background: linear-gradient(90deg, #4facfe, #00f2fe);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .btn:active {
+            transform: translateY(0);
         }
 
-        .instructions ul {
-            padding-left: 25px;
-            margin-bottom: 25px;
+        .btn i {
+            font-size: 1.1rem;
         }
 
-        .instructions li {
-            margin-bottom: 15px;
-            line-height: 1.6;
-            font-size: 1.05rem;
+        .url-input {
+            flex: 1;
+            min-width: 250px;
         }
 
-        .example-url {
+        .url-input input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 2px solid #4a69bd;
             background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .url-input input:focus {
+            outline: none;
+            border-color: #1e90ff;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 150px;
+        }
+
+        .volume-control input {
+            width: 100%;
+        }
+
+        .examples {
+            background: rgba(30, 30, 50, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .examples h2 {
+            margin-bottom: 15px;
+            color: #1e90ff;
+        }
+
+        .example-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .example-item {
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .example-item:hover {
+            background: rgba(30, 144, 255, 0.3);
+            transform: translateX(5px);
+        }
+
+        .status {
             padding: 15px;
-            border-radius: 15px;
-            font-family: monospace;
-            word-break: break-all;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(30, 30, 50, 0.8);
+            border-radius: 10px;
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .status-box {
+            flex: 1;
+            min-width: 200px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .status-box h3 {
+            color: #1e90ff;
+            margin-bottom: 10px;
         }
 
         footer {
             text-align: center;
-            padding: 30px 0;
-            font-size: 0.9rem;
-            opacity: 0.7;
+            margin-top: 40px;
+            padding: 20px;
+            color: rgba(255, 255, 255, 0.7);
         }
 
+        .play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            height: 70px;
+            background: rgba(30, 144, 255, 0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .play-btn:hover {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .play-btn i {
+            font-size: 2rem;
+            color: white;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.2rem;
+            text-align: center;
+            padding: 20px;
+            z-index: 5;
+        }
+
+        .video-overlay.hidden {
+            display: none;
+        }
+
+        /* 响应式设计 */
         @media (max-width: 768px) {
-            .url-input-container {
+            .controls {
                 flex-direction: column;
-            }
-
-            #loadVideo {
-                border-radius: 15px;
-            }
-
-            #videoPlayer {
-                height: 300px;
+                align-items: stretch;
             }
 
             h1 {
-                font-size: 2rem;
+                font-size: 2.2rem;
+            }
+
+            .status {
+                flex-direction: column;
             }
         }
     </style>
@@ -213,77 +282,228 @@
 <body>
     <div class="container">
         <header>
-            <h1>在线 m3u8 视频播放器</h1>
-            <p class="subtitle">支持 HLS 流媒体播放，适用于各种设备和浏览器</p>
+            <h1>M3U8在线播放器</h1>
+            <p class="subtitle">支持播放HLS流媒体视频，输入M3U8地址即可在线观看</p>
         </header>
 
-        <div class="player-container">
-            <div class="url-input-container">
-                <input type="text" id="videoUrl" placeholder="请输入 m3u8 视频链接，例如：https://example.com/video.m3u8">
-                <button id="loadVideo">加载视频</button>
+        <main class="player-container">
+            <div class="video-section">
+                <video id="videoPlayer" controls></video>
+                <div class="video-overlay" id="videoOverlay">
+                    输入M3U8地址并点击播放按钮开始观看
+                </div>
+                <div class="play-btn" id="playButton">
+                    <i class="fas fa-play"></i>
+                </div>
             </div>
-            <video id="videoPlayer" controls></video>
+
+            <div class="controls">
+                <div class="control-group">
+                    <button class="btn" id="playPauseBtn">
+                        <i class="fas fa-play"></i> 播放
+                    </button>
+                    <button class="btn" id="stopBtn">
+                        <i class="fas fa-stop"></i> 停止
+                    </button>
+                    <button class="btn" id="fullscreenBtn">
+                        <i class="fas fa-expand"></i> 全屏
+                    </button>
+                </div>
+
+                <div class="control-group volume-control">
+                    <i class="fas fa-volume-up"></i>
+                    <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.7">
+                </div>
+
+                <div class="control-group url-input">
+                    <input type="url" id="m3u8Url" placeholder="输入M3U8视频地址..." value="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8">
+                    <button class="btn" id="loadBtn">
+                        <i class="fas fa-sync-alt"></i> 加载
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <div class="status">
+            <div class="status-box">
+                <h3><i class="fas fa-info-circle"></i> 播放器状态</h3>
+                <p id="playerStatus">等待输入...</p>
+            </div>
+            <div class="status-box">
+                <h3><i class="fas fa-tachometer-alt"></i> 播放信息</h3>
+                <p>音量: <span id="volumeValue">70%</span></p>
+                <p>时长: <span id="duration">00:00</span></p>
+            </div>
+            <div class="status-box">
+                <h3><i class="fas fa-exclamation-triangle"></i> 注意事项</h3>
+                <p>• 需要浏览器支持Media Source Extensions</p>
+                <p>• 确保M3U8地址可跨域访问</p>
+                <p>• 某些流可能只有音频没有视频</p>
+            </div>
         </div>
 
-        <div class="instructions">
-            <h2>使用说明</h2>
-            <ul>
-                <li>在上方输入框中输入有效的 m3u8 视频链接</li>
-                <li>点击"加载视频"按钮开始播放</li>
-                <li>支持大多数现代浏览器（Chrome、Firefox、Safari、Edge）</li>
-                <li>如果视频无法播放，请检查链接是否有效且可公开访问</li>
-                <li>也可以通过URL参数直接播放视频: <code>?url=视频地址</code></li>
-            </ul>
-
-            <h3>示例 m3u8 链接：</h3>
-            <div class="example-url">
-                https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8
-            </div>
-
-            <h3>URL参数使用示例：</h3>
-            <div class="example-url">
-                https://online-player.github.io/?url=https%3A%2F%2Ftest-streams.mux.dev%2Fx36xhzz%2Fx36xhzz.m3u8
+        <div class="examples">
+            <h2><i class="fas fa-lightbulb"></i> 示例M3U8地址</h2>
+            <div class="example-list">
+                <div class="example-item" data-url="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8">示例1: 标准测试流 (720p)</div>
+                <div class="example-item" data-url="https://multiplatform-f.akamaihd.net/i/multi/will/bunny/big_buck_bunny_,640x360_400,640x360_700,640x360_1000,950x540_1500,.f4v.csmil/master.m3u8">示例2: Big Buck Bunny动画 (多分辨率)</div>
+                <div class="example-item" data-url="https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8">示例3: 加拿大Télé-Québec直播</div>
+                <div class="example-item" data-url="https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8">示例4: 丹麦广播测试流</div>
             </div>
         </div>
-
-        <footer>
-            <p>© 2025 在线 m3u8 视频播放器 | 基于 hls.js 技术构建</p>
-        </footer>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.0/dist/hls.min.js"></script>
+    <footer>
+        <p>© 2025 M3U8在线播放器 | 基于hls.js构建 | 兼容Chrome, Firefox, Edge等现代浏览器</p>
+    </footer>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const video = document.getElementById('videoPlayer');
-            const videoUrlInput = document.getElementById('videoUrl');
-            const loadVideoButton = document.getElementById('loadVideo');
+            // 获取DOM元素
+            const videoPlayer = document.getElementById('videoPlayer');
+            const m3u8UrlInput = document.getElementById('m3u8Url');
+            const loadBtn = document.getElementById('loadBtn');
+            const playPauseBtn = document.getElementById('playPauseBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const volumeSlider = document.getElementById('volumeSlider');
+            const volumeValue = document.getElementById('volumeValue');
+            const playerStatus = document.getElementById('playerStatus');
+            const playButton = document.getElementById('playButton');
+            const videoOverlay = document.getElementById('videoOverlay');
+            const durationDisplay = document.getElementById('duration');
 
             let hls = null;
 
-            function loadVideo(url) {
-                // 如果已经有一个 HLS 实例在运行，先销毁它
+            // 设置初始音量
+            videoPlayer.volume = volumeSlider.value;
+            volumeValue.textContent = Math.round(volumeSlider.value * 100) + '%';
+
+            // 隐藏遮罩层和播放按钮的函数
+            function hideOverlay() {
+                videoOverlay.classList.add('hidden');
+                playButton.classList.add('hidden');
+            }
+
+            // 显示遮罩层和播放按钮的函数
+            function showOverlay() {
+                videoOverlay.classList.remove('hidden');
+                playButton.classList.remove('hidden');
+                videoOverlay.textContent = '输入M3U8地址并点击播放按钮开始观看';
+            }
+
+            // 加载视频
+            function loadVideo() {
+                const url = m3u8UrlInput.value.trim();
+
+                if (!url) {
+                    playerStatus.textContent = '错误：请输入有效的M3U8地址';
+                    return;
+                }
+
+                playerStatus.textContent = '加载中...';
+                videoOverlay.textContent = '正在加载视频...';
+
+                // 清除之前的HLS实例
                 if (hls) {
                     hls.destroy();
                 }
 
-                // 检查浏览器是否原生支持 HLS
-                if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                    // Safari 浏览器原生支持 HLS
-                    video.src = url;
-                } else if (Hls.isSupported()) {
-                    // 其他浏览器使用 hls.js
-                    hls = new Hls();
-                    hls.loadSource(url);
-                    hls.attachMedia(video);
-                    hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                        video.play();
+                // 创建新的HLS实例
+                if (Hls.isSupported()) {
+                    hls = new Hls({
+                        enableWorker: true,
+                        lowLatencyMode: true,
+                        backBufferLength: 90
                     });
+                    hls.loadSource(url);
+                    hls.attachMedia(videoPlayer);
+
+                    hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                        playerStatus.textContent = '视频已加载，准备播放';
+                        videoOverlay.textContent = '点击播放按钮开始观看';
+                        // 自动播放
+                        videoPlayer.play().catch(e => {
+                            console.log("自动播放失败:", e);
+                            playerStatus.textContent = '视频已加载，请点击播放';
+                        });
+                    });
+
+                    hls.on(Hls.Events.MEDIA_ATTACHED, function() {
+                        playerStatus.textContent = '媒体已附加';
+                    });
+
                     hls.on(Hls.Events.ERROR, function(event, data) {
-                        console.error('HLS 错误:', data);
-                        alert('视频加载失败，请检查链接是否正确且可访问');
+                        let errorType = data.type;
+                        let errorDetails = data.details;
+                        playerStatus.textContent = `错误: ${errorType} - ${errorDetails}`;
+                        videoOverlay.textContent = '加载失败，请检查链接';
+                        console.error('播放错误:', data);
+                    });
+
+                } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+                    // 原生HLS支持（Safari）
+                    videoPlayer.src = url;
+                    videoPlayer.addEventListener('loadedmetadata', function() {
+                        playerStatus.textContent = '视频已加载，准备播放';
+                        hideOverlay();
+                        // 自动播放
+                        videoPlayer.play().catch(e => {
+                            console.log("自动播放失败:", e);
+                            playerStatus.textContent = '视频已加载，请点击播放';
+                        });
+                    });
+                    videoPlayer.addEventListener('error', function() {
+                        playerStatus.textContent = '错误：无法加载视频';
+                        videoOverlay.textContent = '加载失败，请检查链接';
                     });
                 } else {
-                    alert('您的浏览器不支持 HLS 视频播放');
+                    playerStatus.textContent = '错误：您的浏览器不支持HLS播放';
+                    videoOverlay.textContent = '浏览器不支持';
+                }
+            }
+
+            // 播放/暂停切换
+            function togglePlayPause() {
+                if (videoPlayer.paused) {
+                    videoPlayer.play();
+                    playPauseBtn.innerHTML = '<i class="fas fa-pause"></i> 暂停';
+                    hideOverlay();
+                } else {
+                    videoPlayer.pause();
+                    playPauseBtn.innerHTML = '<i class="fas fa-play"></i> 播放';
+                }
+            }
+
+            // 停止播放
+            function stopVideo() {
+                videoPlayer.pause();
+                videoPlayer.currentTime = 0;
+                playPauseBtn.innerHTML = '<i class="fas fa-play"></i> 播放';
+                playerStatus.textContent = '播放已停止';
+                showOverlay();
+            }
+
+            // 进入全屏
+            function enterFullscreen() {
+                const videoContainer = document.querySelector('.video-section');
+                if (videoContainer.requestFullscreen) {
+                    videoContainer.requestFullscreen();
+                } else if (videoContainer.mozRequestFullScreen) {
+                    videoContainer.mozRequestFullScreen();
+                } else if (videoContainer.webkitRequestFullscreen) {
+                    videoContainer.webkitRequestFullscreen();
+                } else if (videoContainer.msRequestFullscreen) {
+                    videoContainer.msRequestFullscreen();
+                }
+            }
+
+            // 更新播放时间
+            function updateDuration() {
+                if (videoPlayer.duration && !isNaN(videoPlayer.duration)) {
+                    const minutes = Math.floor(videoPlayer.duration / 60);
+                    const seconds = Math.floor(videoPlayer.duration % 60);
+                    durationDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
                 }
             }
 
@@ -298,35 +518,67 @@
             if (urlParam) {
                 // 如果有url参数，使用参数中的URL
                 const decodedUrl = decodeURIComponent(urlParam);
-                videoUrlInput.value = decodedUrl;
-                loadVideo(decodedUrl);
+                m3u8UrlInput.value = decodedUrl;
+                loadVideo();
             } else {
-                // 如果没有url参数，使用默认示例URL
-                videoUrlInput.value = 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8';
-                loadVideo(videoUrlInput.value);
+                // 自动加载默认视频
+                loadVideo();
             }
 
-            // 点击按钮加载视频
-            loadVideoButton.addEventListener('click', function() {
-                const url = videoUrlInput.value.trim();
-                if (url) {
-                    loadVideo(url);
-                } else {
-                    alert('请输入有效的视频链接');
+            // 事件监听
+            loadBtn.addEventListener('click', loadVideo);
+
+            playPauseBtn.addEventListener('click', togglePlayPause);
+
+            stopBtn.addEventListener('click', stopVideo);
+
+            fullscreenBtn.addEventListener('click', enterFullscreen);
+
+            volumeSlider.addEventListener('input', function() {
+                videoPlayer.volume = volumeSlider.value;
+                volumeValue.textContent = Math.round(volumeSlider.value * 100) + '%';
+            });
+
+            playButton.addEventListener('click', function() {
+                videoPlayer.play();
+                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i> 暂停';
+                hideOverlay();
+            });
+
+            // 当视频开始播放时隐藏遮罩和播放按钮
+            videoPlayer.addEventListener('play', function() {
+                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i> 暂停';
+                playerStatus.textContent = '播放中...';
+                hideOverlay();
+            });
+
+            // 当视频暂停时
+            videoPlayer.addEventListener('pause', function() {
+                playPauseBtn.innerHTML = '<i class="fas fa-play"></i> 播放';
+                playerStatus.textContent = '已暂停';
+            });
+
+            // 点击示例地址加载
+            document.querySelectorAll('.example-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const url = this.getAttribute('data-url');
+                    m3u8UrlInput.value = url;
+                    loadVideo();
+                });
+            });
+
+            // 支持回车键加载
+            m3u8UrlInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    loadVideo();
                 }
             });
 
-            // 支持回车键加载视频
-            videoUrlInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    const url = videoUrlInput.value.trim();
-                    if (url) {
-                        loadVideo(url);
-                    } else {
-                        alert('请输入有效的视频链接');
-                    }
-                }
-            });
+            videoPlayer.addEventListener('timeupdate', updateDuration);
+            videoPlayer.addEventListener('loadedmetadata', updateDuration);
+
+            // 初始化
+            playerStatus.textContent = '播放器已就绪';
         });
     </script>
 </body>
