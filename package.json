@@ -1,0 +1,16 @@
+{
+  "name": "online-player",
+  "version": "1.0.0",
+  "description": "Online m3u8 video player",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "http-server .",
+    "build": "echo \"Build completed\""
+  },
+  "private": true,
+  "dependencies": {
+    "hls.js": "^1.4.0",
+    "http-server": "^14.1.1"
+  }
+}
