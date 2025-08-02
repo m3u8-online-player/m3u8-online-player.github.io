@@ -379,6 +379,14 @@
             videoPlayer.volume = volumeSlider.value;
             volumeValue.textContent = Math.round(volumeSlider.value * 100) + '%';
 
+            // 将HTTP URL转换为HTTPS的函数
+            function convertToHttps(url) {
+                if (url.startsWith('http://') && !url.startsWith('http://localhost') && !url.startsWith('http://127.0.0.1')) {
+                    return url.replace('http://', 'https://');
+                }
+                return url;
+            }
+
             // 隐藏遮罩层和播放按钮的函数
             function hideOverlay() {
                 videoOverlay.classList.add('hidden');
@@ -394,11 +402,19 @@
 
             // 加载视频
             function loadVideo() {
-                const url = m3u8UrlInput.value.trim();
+                let url = m3u8UrlInput.value.trim();
 
                 if (!url) {
                     playerStatus.textContent = '错误：请输入有效的M3U8地址';
                     return;
+                }
+
+                // 转换HTTP为HTTPS
+                const originalUrl = url;
+                url = convertToHttps(url);
+                if (originalUrl !== url) {
+                    m3u8UrlInput.value = url;
+                    playerStatus.textContent = '已自动将HTTP转换为HTTPS';
                 }
 
                 playerStatus.textContent = '加载中...';
@@ -517,7 +533,9 @@
             const urlParam = getParameterByName('url');
             if (urlParam) {
                 // 如果有url参数，使用参数中的URL
-                const decodedUrl = decodeURIComponent(urlParam);
+                let decodedUrl = decodeURIComponent(urlParam);
+                // 转换HTTP为HTTPS
+                decodedUrl = convertToHttps(decodedUrl);
                 m3u8UrlInput.value = decodedUrl;
                 loadVideo();
             } else {
